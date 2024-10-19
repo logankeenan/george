@@ -7,10 +7,13 @@ docker run --runtime=nvidia --gpus all \
   --trust-remote-code
 
 
+##Ubuntu
 #base64 -w 0 /home/logan/Pictures/Screenshots/test.png > image_base64.txt
 #
+##Mac
+#base64 -w 0 -i /Users/logankeenan/test-image_60.png > image_base64.txt
 #
-#curl --location 'http://localhost:8000/v1/chat/completions' \
+#curl --location 'http://192.168.50.200:8000/v1/chat/completions' \
 #--header 'Content-Type: application/json' \
 #--header 'Authorization: Bearer token' \
 #--data '{
