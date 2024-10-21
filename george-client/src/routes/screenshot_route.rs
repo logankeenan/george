@@ -11,18 +11,14 @@ pub async fn screenshot_handler() -> impl IntoResponse {
     let screens = match Screen::all() {
         Ok(s) => s,
         Err(e) => {
-            let string = format!("Failed to get screens: {}", e);
-            println!("{}", string);
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, string));
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to get screens: {}", e)));
         }
     };
     let screen = &screens[0];
     let image: RgbaImage = match screen.capture() {
         Ok(img) => img,
         Err(e) => {
-            let string1 = format!("Failed to capture image: {}", e);
-            println!("{}", string1);
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, string1));
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to capture image: {}", e)));
         }
     };
 
