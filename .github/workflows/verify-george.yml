@@ -1,4 +1,4 @@
-name: Rust CI
+name: Verify George
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  verify:
     runs-on: self-hosted
     defaults:
       run:
