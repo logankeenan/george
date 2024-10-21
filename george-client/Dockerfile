@@ -7,6 +7,10 @@ WORKDIR /usr/src/app
 # Copy the source code into the container
 COPY . .
 
+RUN apt-get update && apt-get install -y \
+    libxdo-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Build the Rust app in release mode
 RUN cargo build --release
 
@@ -33,6 +37,7 @@ RUN apt-get update && apt-get install -y \
     libegl1-mesa \
     pciutils \
     dbus-x11 \
+    libxdo3 \
     && rm -rf /var/lib/apt/lists/*
 
 
