@@ -4,3 +4,6 @@ sudo apt install -y build-essential
 # Used for making screenshots with the tests
 sudo apt-get install -y libxcb1-dev
 sudo apt-get install -y xvfb
+
+# needed for openssl compile
+sudo apt install libssl-dev

@@ -24,11 +24,16 @@ struct Message {
     content: String,
 }
 
+impl Default for George {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+
 impl George {
     pub fn new() -> Self {
-        Self {
-            
-        }
+        Self {}
     }
 
     pub async fn click_coordinate(&self, x: u32, y: u32) -> Result<(), Box<dyn std::error::Error>> {
@@ -55,7 +60,7 @@ impl George {
     pub async fn click(&self, selector: &str) -> Result<(), Box<dyn std::error::Error>> {
         let coordinate = self.coordinate_of(selector).await?;
 
-        Ok(self.click_coordinate(coordinate.0, coordinate.1).await?)
+        self.click_coordinate(coordinate.0, coordinate.1).await
     }
 
 
@@ -109,7 +114,7 @@ impl George {
         }
 
         let response_body: FindResponse = response.json().await?;
-        let content = response_body.choices.get(0)
+        let content = response_body.choices.first()
             .ok_or("No choices in response")?
             .message.content.trim();
 
@@ -132,7 +137,7 @@ impl George {
     pub async fn fill_in(&self, selector: &str, with: &str) -> Result<(), Box<dyn std::error::Error>> {
         self.click(selector).await?;
 
-        Ok(self.type_text(with).await?)
+        self.type_text(with).await
     }
 
     pub async fn type_text(&self, text: &str) -> Result<(), Box<dyn std::error::Error>> {

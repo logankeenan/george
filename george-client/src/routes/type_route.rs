@@ -11,8 +11,7 @@ pub struct TypePayload {
 
 pub async fn type_handler(Json(payload): Json<TypePayload>) -> impl IntoResponse {
     let mut enigo = Enigo::new(&Settings::default()).unwrap();
-
-    // Type out the provided text
+    
     enigo.text(&payload.text).unwrap();
 
     Json(json!({
