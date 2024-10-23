@@ -7,3 +7,6 @@ sudo apt-get install -y xvfb
 
 # needed for openssl compile
 sudo apt install libssl-dev
+
+# need to compile x11 based desktop automation
+sudo apt install libxdo-dev -y
