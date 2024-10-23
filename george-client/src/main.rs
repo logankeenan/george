@@ -4,7 +4,6 @@ use crate::routes::click_route::click_handler;
 use crate::routes::screenshot_route::screenshot_handler;
 use axum::routing::post;
 use axum::{routing::get, Router};
-use axum::response::IntoResponse;
 use crate::routes::type_route::type_handler;
 
 #[tokio::main]
