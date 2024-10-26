@@ -53,11 +53,3 @@ WORKDIR /usr/local/bin
 
 # Copy the built binary from the builder stage
 COPY --from=builder /usr/src/app/target/release/george-client .
-
-# Expose port 3000 to the host
-EXPOSE 3000
-
-# Set environment variables
-ENV DISPLAY=:99
-
-CMD ["sh", "-c", "Xvfb :99 -screen 0 1024x768x16 & sleep 2 && firefox https://meshly.cloud/users/sign_up --width=1024 --height=768 --display=:99 & sleep 5 && ./george-client"]

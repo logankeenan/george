@@ -1,4 +1,7 @@
+use std::collections::HashMap;
 use std::error::Error;
+use std::fs::File;
+use std::path::{Path};
 use serde_json::json;
 use reqwest::{Client, Response};
 use bytes::Bytes;
@@ -6,8 +9,20 @@ use serde::Deserialize;
 use base64::{engine::general_purpose, Engine as _};
 use image::ImageFormat;
 use image::ImageReader;
+use bollard::Docker;
+use bollard::container::{CreateContainerOptions, Config, StartContainerOptions};
+use bollard::image::{BuildImageOptions};
+use bollard::models::{HostConfig, PortBinding};
+use bollard::network::CreateNetworkOptions;
+use futures_util::StreamExt;
+use uuid::Uuid;
+use tar::Builder;
 
-pub struct George {}
+pub struct George {
+    docker: Docker,
+    container_id: Option<String>,
+}
+
 
 #[derive(Deserialize, Debug)]
 struct FindResponse {
@@ -33,7 +48,132 @@ impl Default for George {
 
 impl George {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            docker: Docker::connect_with_local_defaults().expect("Failed to connect to Docker"),
+            container_id: None,
+        }
+    }
+
+    pub async fn start(&mut self) -> Result<(), Box<dyn Error>> {
+        let unique_name = format!("george-{}", Uuid::new_v4());
+        let image_name = format!("george-client:{}", unique_name);
+
+        // Path to the directory containing the Dockerfile
+        let dockerfile_path = Path::new("/Users/logankeenan/Developer/george/george-client");
+
+        // Create a tar archive of the directory
+        let tar_path = Path::new("/tmp/george-client.tar");
+        let file = File::create(tar_path)?;
+        let mut builder = Builder::new(file);
+        builder.append_dir_all(".", dockerfile_path)?;
+        builder.finish()?;
+
+
+        let tar_contents = std::fs::read(tar_path)?;
+        let build_options = BuildImageOptions::<&str> { dockerfile: "Dockerfile", t: image_name.as_str(), ..Default::default() };
+
+        let mut build_stream = self.docker.build_image(
+            build_options,
+            None,
+            Some(tar_contents.into())
+        );
+
+        while let Some(build_result) = build_stream.next().await {
+            match build_result {
+                Ok(output) => println!("Build output: {:?}", output),
+                Err(e) => return Err(format!("Build error: {:?}", e).into()),
+            }
+        }
+
+        let network_name = format!("george-network-{}", Uuid::new_v4());
+        self.docker.create_network(CreateNetworkOptions {
+            name: network_name.as_str(),
+            ..Default::default()
+        }).await?;
+
+        // Create the container
+        let mut exposed_ports = HashMap::new();
+        exposed_ports.insert(String::from("3000/tcp"), HashMap::new());
+
+        let mut port_bindings = HashMap::new();
+        port_bindings.insert(
+            String::from("3000/tcp"),
+            Some(vec![PortBinding {
+                host_ip: Some(String::from("0.0.0.0")),
+                host_port: Some(String::from("3000")),
+            }])
+        );
+
+        let host_config = HostConfig {
+            port_bindings: Some(port_bindings),
+            network_mode: Some(network_name.clone()),
+            ..Default::default()
+        };
+
+        let container = self.docker.create_container(
+            Some(CreateContainerOptions { name: unique_name.clone(), platform: None }),
+            Config {
+                image: Some(image_name),
+                exposed_ports: Some(exposed_ports),
+                host_config: Some(host_config),
+                env: Some(vec!["DISPLAY=:99".to_string()]),
+                cmd: Some(vec![
+                    String::from("sh"), String::from("-c"),
+                    String::from("Xvfb :99 -screen 0 1024x768x16 & sleep 2 && firefox https://meshly.cloud/users/sign_up --width=1024 --height=768 --display=:99 & sleep 5 && ./george-client")
+                ]),
+                ..Default::default()
+            },
+        ).await?;
+
+        // Start the container
+        self.docker.start_container(&container.id, None::<StartContainerOptions<String>>).await?;
+
+        self.container_id = Some(container.id);
+
+        Ok(())
+    }
+
+    pub async fn stop(&mut self) -> Result<(), Box<dyn Error>> {
+        if let Some(container_id) = self.container_id.take() {
+            // Stop the container
+            match self.docker.stop_container(&container_id, None).await {
+                Ok(_) => println!("Container {} stopped", container_id),
+                Err(e) => {
+                    if e.to_string().contains("container is not running") {
+                        println!("Container {} was already stopped", container_id);
+                    } else {
+                        eprintln!("Error stopping container {}: {}", container_id, e);
+                    }
+                }
+            }
+
+            // Remove the container
+            match self.docker.remove_container(&container_id, None).await {
+                Ok(_) => println!("Container {} removed", container_id),
+                Err(e) => return Err(Box::new(e)),
+            }
+
+            // Get the network name and remove it
+            if let Ok(inspect) = self.docker.inspect_container(&container_id, None).await {
+                if let Some(network_settings) = inspect.network_settings {
+                    if let Some(networks) = network_settings.networks {
+                        for (network_name, _) in networks {
+                            // Attempt to remove the network, but don't fail if it's not found
+                            match self.docker.remove_network(&network_name).await {
+                                Ok(_) => println!("Network {} removed", network_name),
+                                Err(e) => eprintln!("Failed to remove network {}: {}", network_name, e),
+                            }
+                        }
+                    }
+                }
+            }
+
+            println!("Container {} and associated resources cleaned up", container_id);
+        } else {
+            println!("No container to stop");
+        }
+
+        Ok(())
     }
 
     pub async fn click_coordinate(&self, x: u32, y: u32) -> Result<(), Box<dyn std::error::Error>> {
@@ -60,6 +200,7 @@ impl George {
     pub async fn click(&self, selector: &str) -> Result<(), Box<dyn std::error::Error>> {
         let coordinate = self.coordinate_of(selector).await?;
 
+        println!("coordinate: {:?}", coordinate);
         self.click_coordinate(coordinate.0, coordinate.1).await
     }
 
