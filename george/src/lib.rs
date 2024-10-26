@@ -21,6 +21,7 @@ use tar::Builder;
 pub struct George {
     docker: Docker,
     container_id: Option<String>,
+    port: Option<String>
 }
 
 
@@ -51,6 +52,7 @@ impl George {
         Self {
             docker: Docker::connect_with_local_defaults().expect("Failed to connect to Docker"),
             container_id: None,
+            port: None,
         }
     }
 
@@ -100,7 +102,7 @@ impl George {
             String::from("3000/tcp"),
             Some(vec![PortBinding {
                 host_ip: Some(String::from("0.0.0.0")),
-                host_port: Some(String::from("3000")),
+                host_port: None, // Change this to None for dynamic port allocation
             }])
         );
 
@@ -128,8 +130,21 @@ impl George {
         // Start the container
         self.docker.start_container(&container.id, None::<StartContainerOptions<String>>).await?;
 
-        self.container_id = Some(container.id);
+        // Get the dynamically assigned port
+        let container_info = self.docker.inspect_container(&container.id, None).await?;
+        let port = container_info.network_settings
+            .and_then(|ns| ns.ports)
+            .and_then(|ports| ports.get("3000/tcp").cloned())
+            .and_then(|bindings| bindings)
+            .and_then(|bindings| bindings.first().cloned())
+            .and_then(|binding| binding.host_port)
+            .ok_or("Failed to get dynamic port")?;
 
+        self.container_id = Some(container.id);
+        println!("running on port: {:?}", port);
+        self.port = Some(port);
+        
+        
         Ok(())
     }
 
@@ -177,8 +192,9 @@ impl George {
     }
 
     pub async fn click_coordinate(&self, x: u32, y: u32) -> Result<(), Box<dyn std::error::Error>> {
+        let port = self.port.as_ref().ok_or("Container not started")?;
         let client = Client::new();
-        let url = "http://127.0.0.1:3000/click";
+        let url = format!("http://127.0.0.1:{}/click", port);
         let body = json!({
             "x": x,
             "y": y,
@@ -206,9 +222,10 @@ impl George {
 
 
     pub async fn screenshot(&self) -> Result<Bytes, Box<dyn Error>> {
+        let port = self.port.as_ref().ok_or("Container not started")?;
         let client = Client::new();
         let response: Response = client
-            .get("http://localhost:3000/screenshot")
+            .get(format!("http://localhost:{}/screenshot", port))
             .send()
             .await?;
 
@@ -282,8 +299,9 @@ impl George {
     }
 
     pub async fn type_text(&self, text: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let port = self.port.as_ref().ok_or("Container not started")?;
         let client = Client::new();
-        let url = "http://127.0.0.1:3000/type";
+        let url = format!("http://127.0.0.1:{}/type", port);
         let body = json!({
             "text": text,
         });
