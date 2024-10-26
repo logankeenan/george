@@ -1,14 +1,18 @@
 mod routes;
 
-use crate::routes::click_route::click_handler;
-use crate::routes::screenshot_route::screenshot_handler;
+use crate::{
+    routes::click_route::click_handler,
+    routes::screenshot_route::screenshot_handler,
+    routes::type_route::type_handler,
+    routes::root_route::root_handler,
+};
 use axum::routing::post;
 use axum::{routing::get, Router};
-use crate::routes::type_route::type_handler;
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
+        .route("/", get(root_handler))
         .route("/screenshot", get(screenshot_handler))
         .route("/click", post(click_handler))
         .route("/type", post(type_handler));
