@@ -21,7 +21,8 @@ use tar::Builder;
 pub struct George {
     docker: Docker,
     container_id: Option<String>,
-    port: Option<String>
+    port: Option<String>,
+    network_name: Option<String>, // Added network name field
 }
 
 
@@ -53,6 +54,7 @@ impl George {
             docker: Docker::connect_with_local_defaults().expect("Failed to connect to Docker"),
             container_id: None,
             port: None,
+            network_name: None,
         }
     }
 
@@ -77,7 +79,7 @@ impl George {
         let mut build_stream = self.docker.build_image(
             build_options,
             None,
-            Some(tar_contents.into())
+            Some(tar_contents.into()),
         );
 
         while let Some(build_result) = build_stream.next().await {
@@ -88,6 +90,7 @@ impl George {
         }
 
         let network_name = format!("george-network-{}", Uuid::new_v4());
+        self.network_name = Some(network_name.clone());
         self.docker.create_network(CreateNetworkOptions {
             name: network_name.as_str(),
             ..Default::default()
@@ -103,7 +106,7 @@ impl George {
             Some(vec![PortBinding {
                 host_ip: Some(String::from("0.0.0.0")),
                 host_port: None, // Change this to None for dynamic port allocation
-            }])
+            }]),
         );
 
         let host_config = HostConfig {
@@ -121,7 +124,7 @@ impl George {
                 env: Some(vec!["DISPLAY=:99".to_string()]),
                 cmd: Some(vec![
                     String::from("sh"), String::from("-c"),
-                    String::from("Xvfb :99 -screen 0 1024x768x16 & sleep 2 && firefox https://meshly.cloud/users/sign_up --width=1024 --height=768 --display=:99 & sleep 5 && ./george-client")
+                    String::from("Xvfb :99 -screen 0 1024x768x16 & sleep 2 && firefox http://host.docker.internal:3001 --width=1024 --height=768 --display=:99 & sleep 5 && ./george-client")
                 ]),
                 ..Default::default()
             },
@@ -143,8 +146,8 @@ impl George {
         self.container_id = Some(container.id);
         println!("running on port: {:?}", port);
         self.port = Some(port);
-        
-        
+
+
         Ok(())
     }
 
@@ -169,17 +172,10 @@ impl George {
             }
 
             // Get the network name and remove it
-            if let Ok(inspect) = self.docker.inspect_container(&container_id, None).await {
-                if let Some(network_settings) = inspect.network_settings {
-                    if let Some(networks) = network_settings.networks {
-                        for (network_name, _) in networks {
-                            // Attempt to remove the network, but don't fail if it's not found
-                            match self.docker.remove_network(&network_name).await {
-                                Ok(_) => println!("Network {} removed", network_name),
-                                Err(e) => eprintln!("Failed to remove network {}: {}", network_name, e),
-                            }
-                        }
-                    }
+            if let Some(network_name) = self.network_name.take() {
+                match self.docker.remove_network(&network_name).await {
+                    Ok(_) => println!("Network {} removed", network_name),
+                    Err(e) => eprintln!("Failed to remove network {}: {}", network_name, e),
                 }
             }
 
@@ -216,6 +212,7 @@ impl George {
     pub async fn click(&self, selector: &str) -> Result<(), Box<dyn std::error::Error>> {
         let coordinate = self.coordinate_of(selector).await?;
 
+        println!("selector: {:?}", selector);
         println!("coordinate: {:?}", coordinate);
         self.click_coordinate(coordinate.0, coordinate.1).await
     }
@@ -272,6 +269,8 @@ impl George {
         }
 
         let response_body: FindResponse = response.json().await?;
+
+        println!("response_body: {:?}", response_body);
         let content = response_body.choices.first()
             .ok_or("No choices in response")?
             .message.content.trim();

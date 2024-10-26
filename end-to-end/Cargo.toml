@@ -1,0 +1,20 @@
+[package]
+name = "end-to-end"
+version = "0.1.0"
+edition = "2021"
+
+
+[[bin]]
+name = "server"
+path = "server/main.rs"
+
+
+[[test]]
+name = "e2e_tests"
+path = "src/main.rs"
+
+[dependencies]
+axum = "0.7.7"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+george = { version = "0.1.0", path = "../george" }

@@ -1,6 +1,8 @@
 [workspace]
 members = [
-    "george", "george-client",
+    "end-to-end",
+    "george",
+    "george-client",
 ]
 
 resolver = "2"
