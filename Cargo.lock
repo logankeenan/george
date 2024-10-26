@@ -763,7 +763,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "george-client"
+name = "george-daemon"
 version = "0.1.0"
 dependencies = [
  "axum",

@@ -60,13 +60,13 @@ impl George {
 
     pub async fn start(&mut self) -> Result<(), Box<dyn Error>> {
         let unique_name = format!("george-{}", Uuid::new_v4());
-        let image_name = format!("george-client:{}", unique_name);
+        let image_name = format!("george-daemon:{}", unique_name);
 
         // Path to the directory containing the Dockerfile
-        let dockerfile_path = Path::new("/Users/logankeenan/Developer/george/george-client");
+        let dockerfile_path = Path::new("/Users/logankeenan/Developer/george/george-daemon");
 
         // Create a tar archive of the directory
-        let tar_path = Path::new("/tmp/george-client.tar");
+        let tar_path = Path::new("/tmp/george-daemon.tar");
         let file = File::create(tar_path)?;
         let mut builder = Builder::new(file);
         builder.append_dir_all(".", dockerfile_path)?;
@@ -124,7 +124,7 @@ impl George {
                 env: Some(vec!["DISPLAY=:99".to_string()]),
                 cmd: Some(vec![
                     String::from("sh"), String::from("-c"),
-                    String::from("Xvfb :99 -screen 0 1024x768x16 & sleep 2 && firefox http://host.docker.internal:3001 --width=1024 --height=768 --display=:99 & sleep 5 && ./george-client")
+                    String::from("Xvfb :99 -screen 0 1024x768x16 & sleep 2 && firefox http://host.docker.internal:3001 --width=1024 --height=768 --display=:99 & sleep 5 && ./george-daemon")
                 ]),
                 ..Default::default()
             },

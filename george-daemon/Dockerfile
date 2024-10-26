@@ -52,4 +52,4 @@ RUN wget -O firefox.tar.bz2 'https://download.mozilla.org/?product=firefox-lates
 WORKDIR /usr/local/bin
 
 # Copy the built binary from the builder stage
-COPY --from=builder /usr/src/app/target/release/george-client .
+COPY --from=builder /usr/src/app/target/release/george-daemon .

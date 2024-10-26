@@ -2,7 +2,7 @@
 members = [
     "end-to-end",
     "george",
-    "george-client",
+    "george-daemon",
 ]
 
 resolver = "2"
