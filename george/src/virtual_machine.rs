@@ -6,11 +6,11 @@ use bollard::Docker;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
-use tar::Builder;
 use uuid::Uuid;
 use futures_util::StreamExt;
+use tar::Builder;
 use thiserror::Error;
 use tokio::time::sleep;
 
@@ -61,7 +61,8 @@ impl VirtualMachine {
     }
 
     async fn build_image(&self, image_name: &str) -> Result<(), VirtualMachineError> {
-        let dockerfile_path = Path::new("/Users/logankeenan/Developer/george/george-daemon");
+        let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let dockerfile_path = project_root.join("george-daemon");
 
         let tar_path = Path::new("/tmp/george-daemon.tar");
         let mut builder = Builder::new(File::create(tar_path)?);

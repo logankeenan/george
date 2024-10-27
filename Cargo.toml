@@ -1,8 +1,0 @@
-[workspace]
-members = [
-    "end-to-end",
-    "george",
-    "george-daemon",
-]
-
-resolver = "2"
