@@ -156,7 +156,7 @@ impl Daemon {
         let response_body: FindResponse = response.json().await?;
 
         let content = response_body.choices.first()
-            .ok_or_else(|| DaemonError::Unexpected("No choices in response".into()))?
+            .ok_or_else(|| DaemonError::Unexpected(format!("No choices in response. Selector: {}", selector)))?
             .message.content.trim();
 
         let coords: Vec<f64> = content
@@ -171,7 +171,7 @@ impl Daemon {
             let y = ((coords[1] / 100.0) * height as f64) as u32;
             Ok((x, y))
         } else {
-            Err(DaemonError::Unexpected(format!("Failed to parse coordinates from response: {:?}", response_body)))
+            Err(DaemonError::Unexpected(format!("Failed to parse coordinates \n response: {:?} \n selector: {}", response_body, selector)))
         }
     }
 
