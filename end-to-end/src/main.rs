@@ -9,6 +9,10 @@ mod tests {
         george.start().await?;
         tokio::time::sleep(Duration::from_secs(5)).await;
         george.fill_in("input name field", "Ada Lovelace").await?;
+        george.fill_in("input phone field", "5554443333").await?;
+        george.fill_in("input email field", "ada@email.com").await?;
+        george.click("First Programmer checkbox").await?;
+        george.click("Programmer radio option").await?;
         george.click("submit button").await?;
         tokio::time::sleep(Duration::from_secs(3)).await;
         george.coordinate_of("Success text").await?;
