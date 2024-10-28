@@ -15,7 +15,7 @@ async fn test_fill_in_and_submit() -> Result<(), Box<dyn std::error::Error>> {
     george.fill_in("input phone field", "5554443333").await?;
     george.fill_in("input email field", "ada@email.com").await?;
     george.click("First Programmer checkbox").await?;
-    george.click("Programmer radio option").await?;
+    george.click("Programming radio label").await?;
     george.click("submit button").await?;
     tokio::time::sleep(Duration::from_secs(3)).await;
     george.coordinate_of("Success text").await?;
