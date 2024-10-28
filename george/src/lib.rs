@@ -2,7 +2,7 @@ mod daemon;
 mod virtual_machine;
 
 use crate::daemon::{Daemon, DaemonError};
-use crate::virtual_machine::VirtualMachine;
+use crate::virtual_machine::{VirtualMachine, VirtualMachineError};
 use bytes::Bytes;
 use std::error::Error;
 use uuid::Uuid;
@@ -64,5 +64,9 @@ impl George {
 
     pub async fn coordinate_of(&self, selector: &str) -> Result<(u32, u32), DaemonError> {
         self.daemon.coordinate_of(selector).await
+    }
+    
+    pub async fn execute(&self, command: &str, wait_for_output: bool) -> Result<String, VirtualMachineError> {
+        self.virtual_machine.execute(command, wait_for_output).await
     }
 }

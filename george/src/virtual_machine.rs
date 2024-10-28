@@ -1,8 +1,11 @@
-use bollard::container::{Config, CreateContainerOptions, StartContainerOptions};
-use bollard::image::BuildImageOptions;
-use bollard::models::{HostConfig, PortBinding};
-use bollard::network::CreateNetworkOptions;
-use bollard::Docker;
+use bollard::{
+    network::CreateNetworkOptions,
+    models::{HostConfig, PortBinding},
+    image::BuildImageOptions,
+    container::{Config, CreateContainerOptions, StartContainerOptions},
+    exec::{CreateExecOptions, StartExecOptions},
+    Docker,
+};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
@@ -125,7 +128,7 @@ impl VirtualMachine {
                 env: Some(vec!["DISPLAY=:99".to_string()]),
                 cmd: Some(vec![
                     String::from("sh"), String::from("-c"),
-                    String::from("Xvfb :99 -screen 0 1024x768x16 & sleep 2 && firefox http://host.docker.internal:3001 --width=1024 --height=768 --display=:99 & sleep 5 && ./george-daemon")
+                    String::from("Xvfb :99 -screen 0 1024x768x16 & sleep 2 && ./george-daemon")
                 ]),
                 ..Default::default()
             },
@@ -133,8 +136,46 @@ impl VirtualMachine {
 
         Ok(())
     }
+
+    pub async fn execute(&self, command: &str, wait_for_output: bool) -> Result<String, VirtualMachineError> {
+        let container_info = self.docker.inspect_container(&self.container_name, None).await?;
+        if !container_info.state.unwrap().running.unwrap_or(false) {
+            return Err(VirtualMachineError::Docker(bollard::errors::Error::IOError {
+                err: std::io::Error::new(std::io::ErrorKind::Other, "Container is not running"),
+            }));
+        }
+
+        let exec = self.docker.create_exec(
+            &self.container_name,
+            CreateExecOptions {
+                cmd: Some(vec!["sh", "-c", command]),
+                attach_stdout: Some(wait_for_output),
+                attach_stderr: Some(wait_for_output),
+                ..Default::default()
+            },
+        ).await?;
+
+        let output = self.docker.start_exec(&exec.id, None::<StartExecOptions>).await?;
+
+        if wait_for_output {
+            if let bollard::exec::StartExecResults::Attached { mut output, .. } = output {
+                let mut result = String::new();
+                while let Some(Ok(output_chunk)) = output.next().await {
+                    result.push_str(&output_chunk.to_string());
+                }
+                Ok(result)
+            } else {
+                Err(VirtualMachineError::Docker(bollard::errors::Error::IOError {
+                    err: std::io::Error::new(std::io::ErrorKind::Other, "Failed to get command output"),
+                }))
+            }
+        } else {
+            Ok(String::from("Command started, not waiting for output"))
+        }
+    }
+
     async fn extract_port(&mut self) -> Result<(), VirtualMachineError> {
-        const MAX_RETRIES: u32 = 3;
+        const MAX_RETRIES: u32 = 10;
         const RETRY_DELAY: Duration = Duration::from_millis(200);
 
         for attempt in 1..MAX_RETRIES {
