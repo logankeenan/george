@@ -39,9 +39,7 @@ pub struct VirtualMachine {
 }
 
 impl VirtualMachine {
-    pub fn new() -> Self {
-        let id = Uuid::new_v4();
-
+    pub fn new(id: Uuid) -> Self {
         Self {
             id,
             docker: Docker::connect_with_local_defaults().expect("Failed to connect to Docker"),

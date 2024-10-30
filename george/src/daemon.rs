@@ -3,10 +3,11 @@ use bytes::Bytes;
 use image::ImageFormat;
 use image::ImageReader;
 use reqwest::{Client, Response};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::default::Default;
 use thiserror::{Error};
+use uuid::Uuid;
+use crate::daemon_output::{DaemonOutput, DaemonOutputError, DaemonOutputEntry};
 
 #[derive(Error, Debug)]
 pub enum DaemonError {
@@ -20,35 +21,38 @@ pub enum DaemonError {
     ImageDecodingError(#[from] image::ImageError),
     #[error("Unexpected error: {0}")]
     Unexpected(String),
+    #[error("Daemon output error: {0}")]
+    DaemonOutputError(#[from] DaemonOutputError),
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct FindResponse {
     choices: Vec<Choice>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Choice {
     message: Message,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Message {
     content: String,
 }
 
 
-#[derive(Default)]
 pub struct Daemon {
     port: Option<String>,
     client: Client,
+    daemon_output: DaemonOutput,
 }
 
 impl Daemon {
-    pub fn new() -> Self {
+    pub fn new(id: Uuid) -> Self {
         Self {
             port: None,
             client: Client::new(),
+            daemon_output: DaemonOutput::new(id),
         }
     }
 
@@ -121,25 +125,34 @@ impl Daemon {
     }
 
     pub async fn coordinate_of(&self, selector: &str) -> Result<(u32, u32), DaemonError> {
+        let mut daemon_output_entry = DaemonOutputEntry::default();
+
         let screenshot_bytes = self.screenshot().await?;
+        self.daemon_output.save_screenshot(&mut daemon_output_entry, &screenshot_bytes)?;
 
         let img = ImageReader::with_format(std::io::Cursor::new(&screenshot_bytes), ImageFormat::Png)
             .decode()?;
         let (width, height) = (img.width(), img.height());
         let image_base64 = general_purpose::STANDARD.encode(&screenshot_bytes);
 
+        let prompt = format!("Find the {} and return the coordinates. The response should only be in the follow format: [x, y]", selector);
         let request_body = json!({
             "model": "allenai/Molmo-7B-D-0924",
             "messages": [
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": format!("Find the {} and return the coordinates. The response should only be in the follow format: [x, y]", selector)},
+                        {"type": "text", "text": prompt},
                         {"type": "image_url", "image_url": {"url": format!("data:image/jpeg;base64,{}", image_base64)}}
                     ]
                 }
             ]
         });
+
+        daemon_output_entry.prompt = Some(prompt.clone());
+        self.daemon_output.log(&mut daemon_output_entry)?;
+        daemon_output_entry.request_body = Some(serde_json::to_string(&request_body)?);
+        self.daemon_output.log(&mut daemon_output_entry)?;
 
         let response = self.client
             .post("http://logan-server:8000/v1/chat/completions")
@@ -149,11 +162,18 @@ impl Daemon {
             .send()
             .await?;
 
-        if !response.status().is_success() {
+        let status = response.status();
+        let response_body = response.text().await?;
+
+        daemon_output_entry.response_body = Some(response_body.clone());
+        self.daemon_output.log(&mut daemon_output_entry)?;
+
+        if !status.is_success() {
             return Err(DaemonError::Unexpected("Failed to process the find request.".into()));
         }
 
-        let response_body: FindResponse = response.json().await?;
+        let response_body: FindResponse = serde_json::from_str(&response_body)?;
+
 
         let content = response_body.choices.first()
             .ok_or_else(|| DaemonError::Unexpected(format!("No choices in response. Selector: {}", selector)))?
@@ -166,13 +186,18 @@ impl Daemon {
             .collect();
 
 
-        if coords.len() == 2 {
+        let coordinates = if coords.len() == 2 {
             let x = ((coords[0] / 100.0) * width as f64) as u32;
             let y = ((coords[1] / 100.0) * height as f64) as u32;
-            Ok((x, y))
+            (x, y)
         } else {
-            Err(DaemonError::Unexpected(format!("Failed to parse coordinates \n response: {:?} \n selector: {}", response_body, selector)))
-        }
+            return Err(DaemonError::Unexpected("Failed to parse coordinates".to_string()));
+        };
+
+        daemon_output_entry.coordinates = Some(coordinates);
+        self.daemon_output.log(&mut daemon_output_entry)?;
+
+        Ok(coordinates)
     }
 
     pub async fn click(&self, selector: &str) -> Result<(), DaemonError> {

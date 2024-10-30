@@ -1,5 +1,6 @@
 mod daemon;
 mod virtual_machine;
+mod daemon_output;
 
 use crate::daemon::{Daemon, DaemonError};
 use crate::virtual_machine::{VirtualMachine, VirtualMachineError};
@@ -25,8 +26,8 @@ impl George {
 
         Self {
             id,
-            daemon: Daemon::new(),
-            virtual_machine: VirtualMachine::new(),
+            daemon: Daemon::new(id),
+            virtual_machine: VirtualMachine::new(id),
         }
     }
 
