@@ -8,6 +8,10 @@ edition = "2021"
 name = "server"
 path = "server/main.rs"
 
+[[bin]]
+name = "chat"
+path = "chat/main.rs"
+
 
 [[test]]
 name = "e2e_tests"

@@ -69,4 +69,7 @@ impl George {
     pub async fn execute(&self, command: &str, wait_for_output: bool) -> Result<String, VirtualMachineError> {
         self.virtual_machine.execute(command, wait_for_output).await
     }
+    pub async fn coordinate_of_raw(&self, prompt: &str) -> Result<(u32, u32), DaemonError> {
+        self.daemon.coordinate_of_raw(prompt).await
+    }
 }
