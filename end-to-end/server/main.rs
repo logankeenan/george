@@ -27,7 +27,7 @@ async fn root() -> Html<String> {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
         <body>
-            <form action="/submit" method="post">
+            <form autocomplete="off" action="/submit" method="post">
                 <label for="name">Name:
                     <input type="text" id="name" name="name">
                 </label>
@@ -48,13 +48,12 @@ async fn root() -> Html<String> {
                 </label>
                 <br>
                 <br>
-                <fieldset>
-                    <legend>Work:</legend>
+                <div>
                     <input type="radio" id="analytical_engine" name="work" value="analytical_engine">
                     <label for="analytical_engine">Analytical Engine</label>
                     <input type="radio" id="programming" name="work" value="programming">
                     <label for="programming">Programming</label>
-                </fieldset>
+                </div>
                 <br>
                 <button type="submit">Submit</button>
             </form>

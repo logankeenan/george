@@ -156,6 +156,7 @@ impl Daemon {
 
         let response_body: FindResponse = response.json().await?;
         let response_text = serde_json::to_string(&response_body)?;
+        println!();
         println!("Full response body: {}", response_text);
 
         let content = response_body.choices.first()
@@ -163,11 +164,15 @@ impl Daemon {
             .message.content.trim();
 
         let parsed_coords = self.parse_coordinates(content)?;
-        self.calculate_coordinates(parsed_coords, width, height)
+
+        let pixel_coordinates = self.calculate_coordinates(parsed_coords, width, height);
+        println!("pixel_coordinates: {:?}", pixel_coordinates);
+        println!();
+        pixel_coordinates
     }
 
     pub async fn coordinate_of(&self, selector: &str) -> Result<(u32, u32), DaemonError> {
-        let prompt = format!("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible. Find the point coordinate of the {}", selector);
+        let prompt = format!("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible.  Find the point coordinate of a {}", selector);
         self.coordinate_of_raw(&prompt).await
     }
     fn parse_coordinates(&self, content: &str) -> Result<(f64, f64), DaemonError> {
