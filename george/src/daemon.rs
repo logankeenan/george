@@ -205,7 +205,7 @@ impl Daemon {
         if all_points.is_empty() {
             Err(DaemonError::Unexpected(format!("Failed to parse coordinates from content: {}", content)))
         } else {
-            let option = all_points.first().unwrap().clone();
+            let option = *all_points.first().unwrap();
             Ok(option)
         }
     }
