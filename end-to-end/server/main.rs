@@ -25,38 +25,46 @@ async fn root() -> Html<String> {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+            <title>Form Submission</title>
         </head>
         <body>
-            <form autocomplete="off" action="/submit" method="post">
-                <label for="name">Name:
-                    <input type="text" id="name" name="name">
-                </label>
-                <br>
-                <br>
-                <label for="phone">Phone:
-                    <input type="tel" id="phone" name="phone">
-                </label>
-                <br>
-                <br>
-                <label for="email">Email:
-                    <input type="email" id="email" name="email">
-                </label>
-                <br>
-                <br>
-                <label for="first_programmer">First Programmer:
-                    <input type="checkbox" id="first_programmer" name="first_programmer" value="true">
-                </label>
-                <br>
-                <br>
-                <div>
-                    <input type="radio" id="analytical_engine" name="work" value="analytical_engine">
-                    <label for="analytical_engine">Analytical Engine</label>
-                    <input type="radio" id="programming" name="work" value="programming">
-                    <label for="programming">Programming</label>
-                </div>
-                <br>
-                <button type="submit">Submit</button>
-            </form>
+            <div class="container mt-5" style="max-width: 500px">
+                <form autocomplete="off" action="/submit" method="post" class="p-4">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" name="name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" class="form-control" id="phone" name="phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="first_programmer" name="first_programmer" value="true">
+                        <label class="form-check-label" for="first_programmer">First Programmer</label>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" id="analytical_engine" name="work" value="analytical_engine">
+                            <label class="form-check-label" for="analytical_engine">Analytical Engine</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" id="programming" name="work" value="programming">
+                            <label class="form-check-label" for="programming">Programming</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
         </body>
         </html>
         "#

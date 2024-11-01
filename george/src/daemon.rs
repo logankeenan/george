@@ -139,7 +139,9 @@ impl Daemon {
                         {"type": "image_url", "image_url": {"url": format!("data:image/jpeg;base64,{}", image_base64)}}
                     ]
                 }
-            ]
+            ],
+            "temperature": 0,
+            "top_k": 1
         });
 
         let response = self.client

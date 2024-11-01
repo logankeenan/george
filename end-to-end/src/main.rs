@@ -1,4 +1,3 @@
-use std::path::Component::ParentDir;
 use std::time::Duration;
 use george::George;
 
@@ -10,8 +9,8 @@ async fn fill_out_form_and_submit(george: &mut George) -> Result<(), Box<dyn std
     george.fill_in("input Phone text field", "5554443333").await?;
     george.fill_in("input Email text field", "ada@email.com").await?;
     george.click("checkbox labeled First Programmer").await?;
-    george.click("Programming radio label").await?;
-    george.click("gray submit button").await?;
+    george.click("center of the radio button labeled Programming").await?;
+    george.click("blue submit button").await?;
     tokio::time::sleep(Duration::from_secs(3)).await;
     george.coordinate_of("Success text").await?;
 
