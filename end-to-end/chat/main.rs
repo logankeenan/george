@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             break;
         }
 
-        match george.coordinate_of_raw(input).await {
+        match george.coordinate_of_from_prompt(input).await {
             Ok((x, y)) => println!("Coordinates: ({}, {})", x, y),
             Err(e) => eprintln!("Error: {}", e),
         }

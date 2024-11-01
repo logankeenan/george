@@ -8,6 +8,7 @@ use crate::{
 };
 use axum::routing::post;
 use axum::{routing::get, Router};
+use crate::routes::health_route::healthz;
 
 #[tokio::main]
 async fn main() {
@@ -15,7 +16,8 @@ async fn main() {
         .route("/", get(root_handler))
         .route("/screenshot", get(screenshot_handler))
         .route("/click", post(click_handler))
-        .route("/type", post(type_handler));
+        .route("/type", post(type_handler))
+        .route("/healthz", get(healthz));
 
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

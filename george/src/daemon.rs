@@ -6,8 +6,10 @@ use reqwest::{Client, Response};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::default::Default;
+use std::time::Duration;
 use regex::Regex;
 use thiserror::{Error};
+use tokio::time::{sleep, timeout};
 
 #[derive(Error, Debug)]
 pub enum DaemonError {
@@ -19,8 +21,14 @@ pub enum DaemonError {
     ParseError(#[from] serde_json::Error),
     #[error("Image decoding failed: {0}")]
     ImageDecodingError(#[from] image::ImageError),
+    #[error("Failed to parse coordinates from: {0}")]
+    FailedToParseCoordinates(String),
+    #[error("Screenshot failed: {0}")]
+    ScreenshotFailed(String),
     #[error("Unexpected error: {0}")]
     Unexpected(String),
+    #[error("Timeout while trying to find selector: {0}")]
+    SelectorTimeout(String),
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -97,7 +105,12 @@ impl Daemon {
             let image_bytes = response.bytes().await?;
             Ok(image_bytes)
         } else {
-            Err(DaemonError::Unexpected("Failed to retrieve screenshot.".into()))
+            let status = response.status();
+            let body = response.text().await.unwrap_or_else(|_| String::from("Unable to retrieve response body"));
+            Err(DaemonError::ScreenshotFailed(format!(
+                "Failed to retrieve screenshot. Status: {}, Body: {}",
+                status, body
+            )))
         }
     }
 
@@ -121,7 +134,33 @@ impl Daemon {
         }
     }
 
-    pub async fn coordinate_of_raw(&self, prompt: &str) -> Result<(u32, u32), DaemonError> {
+    pub async fn ready(&self) -> Result<(), DaemonError> {
+        let timeout_duration = Duration::from_secs(10);
+
+        timeout(timeout_duration, async {
+            loop {
+                match self.check_health().await {
+                    Ok(()) => return Ok(()),
+                    Err(_) => sleep(Duration::from_millis(100)).await,
+                }
+            }
+        })
+            .await
+            .map_err(|_| DaemonError::Unexpected("Daemon health check timed out after 10 seconds".into()))?
+    }
+
+    async fn check_health(&self) -> Result<(), DaemonError> {
+        let url = self.build_url("healthz")?;
+        let response = self.client.get(url).send().await?;
+
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(DaemonError::Unexpected("Daemon health check failed".into()))
+        }
+    }
+
+    pub async fn coordinate_of_from_prompts(&self, prompt: &str) -> Result<(u32, u32), DaemonError> {
         let screenshot_bytes = self.screenshot().await?;
 
         let img = ImageReader::with_format(std::io::Cursor::new(&screenshot_bytes), ImageFormat::Png)
@@ -174,9 +213,10 @@ impl Daemon {
     }
 
     pub async fn coordinate_of(&self, selector: &str) -> Result<(u32, u32), DaemonError> {
-        let prompt = format!("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible.  Find the point coordinate of a {}", selector);
-        self.coordinate_of_raw(&prompt).await
+        let prompt = format!("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible.  Find the point coordinate of the center of the {}", selector);
+        self.coordinate_of_from_prompts(&prompt).await
     }
+
     fn parse_coordinates(&self, content: &str) -> Result<(f64, f64), DaemonError> {
         let re_xml = Regex::new(r#"x\d*="\s*([0-9]+(?:\.[0-9]+)?)"\s+y\d*="\s*([0-9]+(?:\.[0-9]+)?)"#).unwrap();
         let re_parens = Regex::new(r#"\(?\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*\)?"#).unwrap();
@@ -205,7 +245,7 @@ impl Daemon {
 
 
         if all_points.is_empty() {
-            Err(DaemonError::Unexpected(format!("Failed to parse coordinates from content: {}", content)))
+            Err(DaemonError::FailedToParseCoordinates(String::from(content)))
         } else {
             let option = *all_points.first().unwrap();
             Ok(option)

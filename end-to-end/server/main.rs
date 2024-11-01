@@ -26,10 +26,10 @@ async fn root() -> Html<String> {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-            <title>Form Submission</title>
         </head>
         <body>
             <div class="container mt-5" style="max-width: 500px">
+                <h1>End-to-End Test</h1>
                 <form autocomplete="off" action="/submit" method="post" class="p-4">
                     <div class="form-group">
                         <label for="name">Name</label>
