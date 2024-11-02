@@ -18,7 +18,7 @@ pub struct George {
 impl George {
     pub fn new(vision_llm_url: &str) -> Self {
         let id = Uuid::new_v4();
-        let daemon_settings = DaemonSettings::new(vision_llm_url.to_string());
+        let daemon_settings = DaemonSettings::new(vision_llm_url);
 
         Self {
             id,

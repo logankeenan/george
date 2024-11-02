@@ -59,10 +59,10 @@ pub struct DaemonSettings {
 }
 
 impl DaemonSettings {
-    pub fn new(vision_llm_url: String) -> Self {
+    pub fn new(vision_llm_url: &str) -> Self {
         Self {
             vision_coordinate_prompt: String::from("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible."),
-            vision_llm_url,
+            vision_llm_url: vision_llm_url.to_string(),
         }
     }
 
@@ -74,7 +74,7 @@ impl DaemonSettings {
 
 
 impl Daemon {
-    pub fn new(visual_llm_url: String) -> Self {
+    pub fn new(visual_llm_url: &str) -> Self {
         Self {
             port: None,
             client: Client::new(),
@@ -300,7 +300,7 @@ mod tests {
 
     #[test]
     fn test_parse_coordinates() {
-        let daemon = Daemon::new();
+        let daemon = Daemon::new("https://doesnotmatter.com");
         let input = r#"<points x1="0.6" y1="13.0" x2="104.7" y2="12.8" alt="the point coordinate of the sign up name input field">the point coordinate of the sign up name input field</points>"#;
         let result = daemon.parse_coordinates(input).unwrap();
         assert_eq!(result, (0.6, 13.0));
@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn test_parse_coordinates_in_parens() {
-        let daemon = Daemon::new();
+        let daemon = Daemon::new("https://doesnotmatter.com");
         let input = r#"The center of the name input field is at coordinates (10.9, 14.1) in the image. This point represents the midpoint of the horizontal rectangle that contains the input field for the user's name.""#;
         let result = daemon.parse_coordinates(input).unwrap();
         assert_eq!(result, (10.9, 14.1));
