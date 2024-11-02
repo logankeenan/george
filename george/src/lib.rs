@@ -103,7 +103,7 @@ impl George {
     }
 
 
-    pub async fn is_text_visible(&self, text: &str) -> Result<bool, DaemonError> {
+    pub async fn wait_until_text_is_visible(&self, text: &str) -> Result<(), DaemonError> {
         let timeout = Duration::from_secs(5);
         let start = Instant::now();
 
@@ -111,7 +111,7 @@ impl George {
             match self.daemon.is_text_visible(text).await {
                 Ok(result) => {
                     match result {
-                        true => return Ok(true),
+                        true => return Ok(()),
                         false => {
                             println!("Failed determine if text is visible '{}'. Retrying...", text);
                             sleep(Duration::from_millis(10)).await;
@@ -127,18 +127,7 @@ impl George {
             }
         }
 
-        Ok(false)
-    }
-
-    pub async fn wait_until_text_is_visible(&self, text: &str) -> Result<(), DaemonError> {
-        match self.is_text_visible(text).await {
-            Ok(_) => {
-                Ok(())
-            }
-            Err(_) => {
-                Err(DaemonError::Unexpected(String::from("Text not found")))
-            }
-        }
+        Err(DaemonError::Unexpected(String::from("Text is not visible")))
     }
 
     pub async fn is_visible(&self, selector: &str) -> Result<bool, DaemonError> {
