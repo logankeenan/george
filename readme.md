@@ -6,7 +6,7 @@ George is an AI application makes is easy to control a computer with natural lan
 ```rust
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut george = George::new("http://logan-server:8000");
+    let mut george = George::new("https://your-molmo-llm.com");
     george.start().await?;
     george.open_firefox("https://some-website.com").await?;
     george.click("sign in link").await?;
@@ -17,7 +17,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-https://user-images.githubusercontent.com/logankeenan/geroge/assets/demos/2024-11-02.mp4
+[![Watch the video](https://img.shields.io/badge/Watch-The%20Video-red)](https://user-images.githubusercontent.com/logankeenan/geroge/assets/demos/2024-11-02.mp4)
+
 
 
 ## Getting Start
