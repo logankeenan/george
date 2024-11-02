@@ -161,6 +161,8 @@ impl Daemon {
     }
 
     pub async fn coordinate_of_from_prompts(&self, prompt: &str) -> Result<(u32, u32), DaemonError> {
+        println!();
+        println!("prompt: {}", prompt);
         let screenshot_bytes = self.screenshot().await?;
 
         let img = ImageReader::with_format(std::io::Cursor::new(&screenshot_bytes), ImageFormat::Png)
@@ -197,7 +199,6 @@ impl Daemon {
 
         let response_body: FindResponse = response.json().await?;
         let response_text = serde_json::to_string(&response_body)?;
-        println!();
         println!("Full response body: {}", response_text);
 
         let content = response_body.choices.first()
