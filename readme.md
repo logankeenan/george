@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-[2024-11-02.mp4](demos/2024-11-02.mp4)
+https://user-images.githubusercontent.com/logankeenan/geroge/assets/demos/2024-11-02.mp4
 
 
 ## Getting Start
