@@ -18,10 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 
-
-https://github.com/user-attachments/assets/28a5b97f-393d-4cf4-80d9-f2a8c98de6ec
-
-
+https://github.com/user-attachments/assets/4c0a2d85-7eb3-4851-93ff-817c05658776
 
 
 ## Getting Start
