@@ -102,6 +102,45 @@ impl George {
         Err(DaemonError::SelectorTimeout(String::from(selector)))
     }
 
+
+    pub async fn is_text_visible(&self, text: &str) -> Result<bool, DaemonError> {
+        let timeout = Duration::from_secs(5);
+        let start = Instant::now();
+
+        while start.elapsed() < timeout {
+            match self.daemon.is_text_visible(text).await {
+                Ok(result) => {
+                    match result {
+                        true => return Ok(true),
+                        false => {
+                            println!("Failed determine if text is visible '{}'. Retrying...", text);
+                            sleep(Duration::from_millis(10)).await;
+                            continue;
+                        }
+                    }
+                },
+                Err(_e) => {
+                    println!("Failed determine if text is visible '{}'. Retrying...", text);
+                    sleep(Duration::from_millis(10)).await;
+                    continue;
+                }
+            }
+        }
+
+        Ok(false)
+    }
+
+    pub async fn wait_until_text_is_visible(&self, text: &str) -> Result<(), DaemonError> {
+        match self.is_text_visible(text).await {
+            Ok(_) => {
+                Ok(())
+            }
+            Err(_) => {
+                Err(DaemonError::Unexpected(String::from("Text not found")))
+            }
+        }
+    }
+
     pub async fn is_visible(&self, selector: &str) -> Result<bool, DaemonError> {
         let timeout = Duration::from_secs(10);
         let start = Instant::now();
@@ -130,7 +169,7 @@ impl George {
     }
 
     pub async fn coordinate_of_from_prompt(&self, prompt: &str) -> Result<(u32, u32), DaemonError> {
-        self.daemon.coordinate_of_from_prompts(prompt).await
+        self.daemon.coordinate_of_from_prompt(prompt).await
     }
 
     pub async fn open_firefox(&self, url: &str) -> Result<(), VirtualMachineError> {

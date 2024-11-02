@@ -22,6 +22,8 @@ pub enum DaemonError {
     ImageDecodingError(#[from] image::ImageError),
     #[error("Failed to parse coordinates from: {0}")]
     FailedToParseCoordinates(String),
+    #[error("Failed to parse existence from: {0}")]
+    FailedToParseExistence(String),
     #[error("Screenshot failed: {0}")]
     ScreenshotFailed(String),
     #[error("Unexpected error: {0}")]
@@ -56,18 +58,25 @@ pub struct Daemon {
 pub struct DaemonSettings {
     vision_coordinate_prompt: String,
     vision_llm_url: String,
+    is_text_visible_prompt: String,
 }
 
 impl DaemonSettings {
     pub fn new(vision_llm_url: &str) -> Self {
         Self {
-            vision_coordinate_prompt: String::from("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible."),
+            vision_coordinate_prompt: String::from("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible. Find the point coordinate of the center of the "),
+            is_text_visible_prompt: String::from("find all the text on the screen. return it in an array list"),
             vision_llm_url: vision_llm_url.to_string(),
         }
     }
 
     pub fn set_vision_coordinate_prompt(mut self, vision_coordinate_prompt: String) -> Self {
         self.vision_coordinate_prompt = vision_coordinate_prompt;
+        self
+    }
+
+    pub fn set_is_text_visible_prompt(mut self, is_text_visible_prompt: String) -> Self {
+        self.is_text_visible_prompt = is_text_visible_prompt;
         self
     }
 }
@@ -189,7 +198,81 @@ impl Daemon {
         }
     }
 
-    pub async fn coordinate_of_from_prompts(&self, prompt: &str) -> Result<(u32, u32), DaemonError> {
+    pub async fn is_text_visible_from_prompt(&self, prompt: &str) -> Result<Vec<String>, DaemonError> {
+        println!();
+        println!("prompt: {}", prompt);
+        let screenshot_bytes = self.screenshot().await?;
+
+        let image_base64 = general_purpose::STANDARD.encode(&screenshot_bytes);
+
+        let request_body = json!({
+            "model": "allenai/Molmo-7B-D-0924",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": format!("data:image/jpeg;base64,{}", image_base64)}}
+                    ]
+                }
+            ],
+            "temperature": 0,
+            "top_k": 1
+        });
+
+        let response = self.client
+            .post(format!("{}/v1/chat/completions", self.settings.vision_llm_url))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer token")
+            .json(&request_body)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(DaemonError::Unexpected("Failed to process the existence check request.".into()));
+        }
+
+        let response_body: FindResponse = response.json().await?;
+        let response_text = serde_json::to_string(&response_body)?;
+        println!("Full response body: {}", response_text);
+
+        let content = response_body.choices.first()
+            .ok_or_else(|| DaemonError::Unexpected(format!("No choices in response. Prompt: {}", prompt)))?
+            .message.content.trim().to_lowercase();
+
+
+        println!("content: {:?}", content);
+        let visible_text = self.parse_visible_text(content.as_str())?;
+        Ok(visible_text)
+    }
+
+    pub async fn is_text_visible(&self, text: &str) -> Result<bool, DaemonError> {
+        let visible_texts = self.is_text_visible_from_prompt(self.settings.is_text_visible_prompt.as_str()).await?;
+        let lowercase_text = text.to_lowercase();
+
+        Ok(visible_texts.iter().any(|t| t.to_lowercase() == lowercase_text))
+    }
+
+
+    pub(crate) fn parse_visible_text(&self, content: &str) -> Result<Vec<String>, DaemonError> {
+        let re = Regex::new(r#""(.*?)""#).unwrap(); // Matches text within double quotes
+        let mut visible_text = Vec::new();
+
+
+        for cap in re.captures_iter(content) {
+            if let Some(text) = cap.get(1) {
+                visible_text.push(text.as_str().trim_end_matches('\\').to_string());
+            }
+        }
+
+        if visible_text.is_empty() {
+            return Err(DaemonError::Unexpected("No visible text found".to_string()));
+        }
+
+        Ok(visible_text)
+    }
+
+    pub async fn coordinate_of_from_prompt(&self, prompt: &str) -> Result<(u32, u32), DaemonError> {
         println!();
         println!("prompt: {}", prompt);
         let screenshot_bytes = self.screenshot().await?;
@@ -243,8 +326,8 @@ impl Daemon {
     }
 
     pub async fn coordinate_of(&self, selector: &str) -> Result<(u32, u32), DaemonError> {
-        let prompt = format!("{} Find the point coordinate of the center of the {}", self.settings.vision_coordinate_prompt, selector);
-        self.coordinate_of_from_prompts(&prompt).await
+        let prompt = format!("{} {}", self.settings.vision_coordinate_prompt, selector);
+        self.coordinate_of_from_prompt(&prompt).await
     }
 
     fn parse_coordinates(&self, content: &str) -> Result<(f64, f64), DaemonError> {
@@ -313,6 +396,27 @@ mod tests {
         let result = daemon.parse_coordinates(input).unwrap();
         assert_eq!(result, (10.9, 14.1));
     }
+
+    #[test]
+    fn test_parse_the_visible_text() {
+        let daemon = Daemon::new("https://doesnotmatter.com");
+        let input = r#" Here's an array list containing all the text visible on the screen:\n\n[\n  \"host.docker.internal:3001\",\n  \"Firefox Privacy Notice\",\n  \"End-to-End Test\",\n  \"Name\",\n  \"Phone\",\n  \"Email\",\n  \"First Programmer\",\n  \"Analytical Engine\",\n  \"Programming\",\n  \"Submit\"\n]\n\nThis list includes all the text elements present in the browser tab, address bar, form fields, and buttons visible in the image."#;
+        let result = daemon.parse_visible_text(input).unwrap();
+        assert_eq!(result, vec![
+            "host.docker.internal:3001",
+            "Firefox Privacy Notice",
+            "End-to-End Test",
+            "Name",
+            "Phone",
+            "Email",
+            "First Programmer",
+            "Analytical Engine",
+            "Programming",
+            "Submit"
+        ]);
+    }
+
+
 }
 
 

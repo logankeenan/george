@@ -4,7 +4,7 @@ use std::io::{self, Write};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut george = George::new();
+    let mut george = George::new("http://logan-server:8000");
     george.start().await?;
     george.execute(
         "firefox http://host.docker.internal:3001 --width=1024 --height=768 --display=:99",
