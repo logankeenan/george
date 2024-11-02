@@ -1,7 +1,7 @@
 mod daemon;
 mod virtual_machine;
 
-use crate::daemon::{Daemon, DaemonError};
+use crate::daemon::{Daemon, DaemonError, DaemonSettings};
 use crate::virtual_machine::{VirtualMachine, VirtualMachineError};
 use bytes::Bytes;
 use std::error::Error;
@@ -15,19 +15,24 @@ pub struct George {
     virtual_machine: VirtualMachine,
 }
 
-impl Default for George {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl George {
-    pub fn new() -> Self {
+    pub fn new(vision_llm_url: &str) -> Self {
+        let id = Uuid::new_v4();
+        let daemon_settings = DaemonSettings::new(vision_llm_url.to_string());
+
+        Self {
+            id,
+            daemon: Daemon::with_settings(daemon_settings),
+            virtual_machine: VirtualMachine::new(),
+        }
+    }
+
+    pub fn with_daemon_settings(daemon_settings: DaemonSettings) -> Self {
         let id = Uuid::new_v4();
 
         Self {
             id,
-            daemon: Daemon::new(),
+            daemon: Daemon::with_settings(daemon_settings),
             virtual_machine: VirtualMachine::new(),
         }
     }
@@ -128,9 +133,9 @@ impl George {
         self.daemon.coordinate_of_from_prompts(prompt).await
     }
 
-    pub async fn open_firefox(&self) -> Result<(), VirtualMachineError> {
+    pub async fn open_firefox(&self, url: &str) -> Result<(), VirtualMachineError> {
         self.execute(
-            "firefox http://host.docker.internal:3001 --width=1024 --height=768 --display=:99",
+            format!("firefox {} --width=1024 --height=768 --display=:99", url).as_str(),
             false,
         ).await?;
 

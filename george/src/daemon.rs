@@ -5,7 +5,6 @@ use image::ImageReader;
 use reqwest::{Client, Response};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::default::Default;
 use std::time::Duration;
 use regex::Regex;
 use thiserror::{Error};
@@ -47,17 +46,47 @@ struct Message {
 }
 
 
-#[derive(Default)]
 pub struct Daemon {
     port: Option<String>,
     client: Client,
+    pub settings: DaemonSettings,
 }
 
+#[derive(Clone, Debug)]
+pub struct DaemonSettings {
+    vision_coordinate_prompt: String,
+    vision_llm_url: String,
+}
+
+impl DaemonSettings {
+    pub fn new(vision_llm_url: String) -> Self {
+        Self {
+            vision_coordinate_prompt: String::from("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible."),
+            vision_llm_url,
+        }
+    }
+
+    pub fn set_vision_coordinate_prompt(mut self, vision_coordinate_prompt: String) -> Self {
+        self.vision_coordinate_prompt = vision_coordinate_prompt;
+        self
+    }
+}
+
+
 impl Daemon {
-    pub fn new() -> Self {
+    pub fn new(visual_llm_url: String) -> Self {
         Self {
             port: None,
             client: Client::new(),
+            settings: DaemonSettings::new(visual_llm_url),
+        }
+    }
+
+    pub fn with_settings(settings: DaemonSettings) -> Self {
+        Self {
+            port: None,
+            client: Client::new(),
+            settings,
         }
     }
 
@@ -186,7 +215,7 @@ impl Daemon {
         });
 
         let response = self.client
-            .post("http://logan-server:8000/v1/chat/completions")
+            .post(format!("{}/v1/chat/completions", self.settings.vision_llm_url))
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer token")
             .json(&request_body)
@@ -214,7 +243,7 @@ impl Daemon {
     }
 
     pub async fn coordinate_of(&self, selector: &str) -> Result<(u32, u32), DaemonError> {
-        let prompt = format!("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible.  Find the point coordinate of the center of the {}", selector);
+        let prompt = format!("{} Find the point coordinate of the center of the {}", self.settings.vision_coordinate_prompt, selector);
         self.coordinate_of_from_prompts(&prompt).await
     }
 

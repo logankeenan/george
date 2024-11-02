@@ -18,7 +18,7 @@ async fn fill_out_form_and_submit(george: &mut George) -> Result<(), Box<dyn std
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut george = George::new();
+    let mut george = George::new("http://logan-server:8000");
     george.start().await?;
 
     let mut success_count = 0;
@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for i in 1..=iterations {
         println!("Starting iteration {}", i);
 
-        george.open_firefox().await?;
+        george.open_firefox("http://host.docker.internal:3001").await?;
 
         match fill_out_form_and_submit(&mut george).await {
             Ok(_) => {
