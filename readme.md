@@ -18,6 +18,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 
+
+https://github.com/user-attachments/assets/28a5b97f-393d-4cf4-80d9-f2a8c98de6ec
+
+
+
+
 ## Getting Start
 Prerequisites
 * Rust
