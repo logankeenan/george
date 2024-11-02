@@ -17,9 +17,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-[![Watch the video](https://img.shields.io/badge/Watch-The%20Video-red)](https://user-images.githubusercontent.com/logankeenan/george/assets/demos/2024-11-02.mp4)
-
-
 
 ## Getting Start
 Prerequisites
