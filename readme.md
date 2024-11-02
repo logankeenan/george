@@ -1,6 +1,6 @@
 # George
 
-George is an AI application makes is easy to control a computer with natural language.
+George is an API leveraging AI to make it easy to control a computer with natural language.
 
 
 ```rust
