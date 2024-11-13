@@ -130,29 +130,6 @@ impl George {
         Err(DaemonError::Unexpected(String::from("Text is not visible")))
     }
 
-    pub async fn is_visible(&self, selector: &str) -> Result<bool, DaemonError> {
-        let timeout = Duration::from_secs(10);
-        let start = Instant::now();
-
-        while start.elapsed() < timeout {
-            match self.daemon.coordinate_of(selector).await {
-                Ok(_) => return Ok(true),
-                Err(e) => {
-                    match e {
-                        DaemonError::FailedToParseCoordinates(_) => {
-                            println!("Failed to parse coordinates for selector '{}'. Retrying...", selector);
-                            sleep(Duration::from_millis(10)).await;
-                            continue;
-                        }
-                        _ => return Err(e),
-                    }
-                }
-            }
-        }
-
-        Ok(false)
-    }
-
     pub async fn execute(&self, command: &str, wait_for_output: bool) -> Result<String, VirtualMachineError> {
         self.virtual_machine.execute(command, wait_for_output).await
     }
