@@ -10,7 +10,7 @@ The key to George's reliable automation is providing clear, descriptive referenc
 button" or "email input field". Once these natural descriptions are established, the AI consistently identifies and
 interacts with the correct elements, regardless of underlying code changes.
 
-George runs all in an isolated Docker container with Firefox included by default - though custom
+George runs all in an isolated Docker container - though custom
 Docker images can be used for specific needs.
 
 ### Example
@@ -37,7 +37,7 @@ https://github.com/user-attachments/assets/4c0a2d85-7eb3-4851-93ff-817c05658776
 
 * Rust
 * Docker
-* [Molmo-7B-D-0924](https://huggingface.co/allenai/Molmo-7B-D-0924), see [Setting Up Molmo](#setting-up-molmo) for more
+* [Molmo-7B-D-0924](https://huggingface.co/allenai/Molmo-7B-D-0924).
   details
 
 ### Setting up Molmo
@@ -61,7 +61,9 @@ docker run -d --name molmo_container --runtime=nvidia --gpus all \
   --model allenai/Molmo-7B-D-0924 \
   --trust-remote-code
 ```
-See this [script](https://github.com/logankeenan/george/blob/main/scripts/vllm-install-deps.sh) to easily install Docker with Nvidia support on Ubuntu
+
+See this [script](https://github.com/logankeenan/george/blob/main/scripts/vllm-install-deps.sh) to easily install Docker
+with Nvidia support on Ubuntu
 
 #### Bare Metal
 
