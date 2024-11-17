@@ -45,7 +45,7 @@ https://github.com/user-attachments/assets/4c0a2d85-7eb3-4851-93ff-817c05658776
 George uses Molmo, a vision-based LLM, to identify UI elements by converting natural language descriptions into screen
 coordinates which are then used to execute computer interactions.
 
-You can try the online [demo](https://molmo.allenai.org/) and ask for the point coordinates of an element in an
+You can try the online Molmo [demo](https://molmo.allenai.org/) and ask for the point coordinates of an element in an
 image.
 
 #### Docker
