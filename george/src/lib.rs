@@ -42,6 +42,8 @@ impl George {
 
         if let Some(port) = self.virtual_machine.port.as_ref() {
             self.daemon.set_port(port.clone());
+
+            println!("Daemon running at http://localhost:{}", port);
             Ok(self.daemon.ready().await?)
         } else {
             Err("Failed to get port from virtual machine".into())
@@ -148,7 +150,7 @@ impl George {
     }
 
     pub async fn close_firefox(&self) -> Result<(), VirtualMachineError> {
-        self.execute("pkill firefox", false).await?;
+        self.execute("pkill firefox", true).await?;
 
         Ok(())
     }
