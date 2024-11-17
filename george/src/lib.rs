@@ -27,6 +27,10 @@ impl George {
         }
     }
 
+    pub fn set_vision_llm_auth_token(&mut self, token: &str)  {
+        self.daemon.settings = self.daemon.settings.clone().set_vision_llm_auth_token(token.to_string());
+    }
+
     pub fn with_daemon_settings(daemon_settings: DaemonSettings) -> Self {
         let id = Uuid::new_v4();
 

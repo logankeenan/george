@@ -58,6 +58,7 @@ pub struct Daemon {
 pub struct DaemonSettings {
     vision_coordinate_prompt: String,
     vision_llm_url: String,
+    vision_llm_auth_token: String,
     is_text_visible_prompt: String,
 }
 
@@ -67,6 +68,7 @@ impl DaemonSettings {
             vision_coordinate_prompt: String::from("You are a helpful assistant that is to be used in finding coordinates of items in an image. You are finding coordinates so you can be part of a automated AI tool. You need to be as accurate as possible. Find the point coordinate of the center of the "),
             is_text_visible_prompt: String::from("find all the text on the screen. return it in an array list"),
             vision_llm_url: vision_llm_url.to_string(),
+            vision_llm_auth_token: String::from("token-not-needed-to-local-llm")
         }
     }
 
@@ -77,6 +79,11 @@ impl DaemonSettings {
 
     pub fn set_is_text_visible_prompt(mut self, is_text_visible_prompt: String) -> Self {
         self.is_text_visible_prompt = is_text_visible_prompt;
+        self
+    }
+
+    pub fn set_vision_llm_auth_token(mut self, vision_llm_auth_token: String) -> Self {
+        self.vision_llm_auth_token = vision_llm_auth_token;
         self
     }
 }
@@ -223,7 +230,7 @@ impl Daemon {
         let response = self.client
             .post(format!("{}/v1/chat/completions", self.settings.vision_llm_url))
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer token")
+            .header("Authorization", format!("Bearer {}", self.settings.vision_llm_auth_token))
             .json(&request_body)
             .send()
             .await?;
@@ -300,7 +307,7 @@ impl Daemon {
         let response = self.client
             .post(format!("{}/v1/chat/completions", self.settings.vision_llm_url))
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer token")
+            .header("Authorization", format!("Bearer {}", self.settings.vision_llm_auth_token))
             .json(&request_body)
             .send()
             .await?;
