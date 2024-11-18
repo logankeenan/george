@@ -74,6 +74,17 @@ by leveraging [bitsandbytes](https://github.com/bitsandbytes-foundation/bitsandb
 * Modified Molmo Python [server](https://github.com/logankeenan/molmo-benchmarks/blob/main/main.py#L47) with
   bitsandbytes option
 
+#### Cloud
+
+You can run Molmo with [Runpod.io](https://runpod.io?ref=myyk6f6x) via their vllm pod template. See the video below for
+a demo:
+
+template override:
+```
+--host 0.0.0.0 --port 8000 --model allenai/Molmo-7B-D-0924 --trust-remote-code --api-key your-api-key
+```
+
+
 ## Roadmap
 
 * Improve Documentation
