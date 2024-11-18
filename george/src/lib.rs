@@ -6,7 +6,9 @@
 //!
 //! # Example
 //!
-//! ```rust
+//! ```rust,no_run
+//! use george::George;
+//!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let mut george = George::new("https://your-molmo-llm.com");
@@ -16,7 +18,9 @@
 //!     george.fill_in("input Email text field", "your@email.com").await?;
 //!     george.fill_in("input Password text field", "super-secret").await?;
 //!     george.click("sign in button").await?;
-//!     george.stop().await?
+//!     george.stop().await?;
+//!
+//!     Ok(())
 //! }
 //! ```
 mod daemon;
