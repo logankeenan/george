@@ -77,7 +77,7 @@ by leveraging [bitsandbytes](https://github.com/bitsandbytes-foundation/bitsandb
 #### Cloud
 
 You can run Molmo with [Runpod.io](https://runpod.io?ref=myyk6f6x) via their vllm pod template. See the video below for
-a demo:
+a demo ([youtube]([url](https://youtu.be/x84Lxl40s-A))):
 
 
 https://github.com/user-attachments/assets/8c38169c-bc54-4128-a409-985ef4a2c1de
