@@ -1,10 +1,11 @@
-use std::env;
-use george::George;
-use dotenv::dotenv;
+
 
 #[tokio::test]
 async fn test_fill_out_form() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv().ok();
+    use std::env;
+    use george::George;
+
+    dotenv::dotenv().ok();
 
     let vision_llm_url = env::var("VISION_LLM_URL")
         .expect("VISION_LLM_URL must be set in .env file");
