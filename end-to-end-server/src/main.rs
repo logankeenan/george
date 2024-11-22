@@ -13,7 +13,7 @@ async fn main() {
         .route("/submit", post(submit));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
-    println!("running end-to-end server at http://localhost:3001");
+    println!("running end-to-end-tests server at http://localhost:3001");
     axum::serve(listener, app).await.unwrap();
 }
 
