@@ -6,7 +6,7 @@ edition = "2021"
 
 [[bin]]
 name = "server"
-path = "server/main.rs"
+path = "../end-to-end-server/src/main.rs"
 
 [[bin]]
 name = "chat"
