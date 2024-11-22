@@ -40,13 +40,11 @@ RUN apt-get update && apt-get install -y \
     libxdo3 \
     && rm -rf /var/lib/apt/lists/*
 
-
-# Install Firefox directly from Mozilla's archive
-RUN wget -O firefox.tar.bz2 'https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US' && \
-    tar -xjf firefox.tar.bz2 -C /opt/ && \
-    ln -s /opt/firefox/firefox /usr/bin/firefox && \
-    rm firefox.tar.bz2
-
+RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && apt-get update \
+    && apt-get install -y ./google-chrome-stable_current_amd64.deb \
+    && rm google-chrome-stable_current_amd64.deb \
+    && rm -rf /var/lib/apt/lists/* \
 
 # Set the working directory
 WORKDIR /usr/local/bin

@@ -1,0 +1,54 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    name: end-to-end tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: clippy
+
+      - name: Run Clippy in end-to-end-tests
+        working-directory: ./end-to-end-tests
+        run: cargo clippy -- -D warnings
+
+      - name: Build end-to-end server
+        working-directory: ./end-to-end-server
+        run: cargo build
+
+      - name: Start end-to-end server
+        working-directory: ./end-to-end-server
+        run: cargo run &
+
+      - name: Wait for server to start
+        run: sleep 1
+
+      - name: Get local IP address
+        run: echo "LOCAL_IP=$(hostname -I | awk '{print $1}')" >> $GITHUB_ENV
+
+      - name: Run tests
+        working-directory: ./end-to-end-tests
+        env:
+          VISION_LLM_URL: ${{ secrets.VISION_LLM_URL }}
+          VISION_LLM_AUTH_TOKEN: ${{ secrets.VISION_LLM_AUTH_TOKEN }}
+          LOCAL_IP: ${{ env.LOCAL_IP }}
+        run: cargo test
+
+      - name: Stop end-to-end server
+        run: pkill -f "end-to-end-server"

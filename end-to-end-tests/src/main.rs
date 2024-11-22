@@ -11,12 +11,14 @@ async fn test_fill_out_form() -> Result<(), Box<dyn std::error::Error>> {
         .expect("VISION_LLM_URL must be set in .env file");
     let auth_token = env::var("VISION_LLM_AUTH_TOKEN")
         .expect("VISION_LLM_AUTH_TOKEN must be set in .env file");
+    let local_ip = env::var("LOCAL_IP")
+        .unwrap_or_else(|_| "host.docker.internal".to_string());
 
     let mut george = George::new(&vision_llm_url);
     george.set_vision_llm_auth_token(&auth_token);
     george.start().await?;
 
-    george.open_firefox("http://host.docker.internal:3001").await?;
+    george.open_chrome(&format!("http://{}:3001", local_ip)).await?;
 
     george.wait_until_text_is_visible("End-to-End Test").await?;
     george.fill_in("input Name text field", "Ada Lovelace").await?;
@@ -28,7 +30,7 @@ async fn test_fill_out_form() -> Result<(), Box<dyn std::error::Error>> {
 
     george.wait_until_text_is_visible("Success").await?;
 
-    george.close_firefox().await?;
+    george.close_chrome().await?;
     george.stop().await?;
 
     Ok(())

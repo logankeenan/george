@@ -83,7 +83,7 @@ impl VirtualMachine {
 
         while let Some(build_result) = build_stream.next().await {
             match build_result {
-                Ok(output) => println!("Build output: {:?}", output),
+                Ok(_) => {},
                 Err(e) => return Err(VirtualMachineError::Build(format!("{:?}", e))),
             }
         }

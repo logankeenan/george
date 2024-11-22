@@ -50,19 +50,19 @@ async fn root() -> Html<String> {
                         <input type="checkbox" class="form-check-input" id="first_programmer" name="first_programmer" value="true">
                         <label class="form-check-label" for="first_programmer">First Programmer</label>
                     </div>
-
                     <div class="form-group">
-                        <div class="form-check">
+                        <div class="form-check form-check-inline">
                             <input type="radio" class="form-check-input" id="analytical_engine" name="work" value="analytical_engine">
                             <label class="form-check-label" for="analytical_engine">Analytical Engine</label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check form-check-inline">
                             <input type="radio" class="form-check-input" id="programming" name="work" value="programming">
                             <label class="form-check-label" for="programming">Programming</label>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
                 </form>
             </div>
         </body>

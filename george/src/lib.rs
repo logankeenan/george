@@ -13,11 +13,12 @@
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let mut george = George::new("https://your-molmo-llm.com");
 //!     george.start().await?;
-//!     george.open_firefox("https://some-website.com").await?;
+//!     george.open_chrome("https://some-website.com").await?;
 //!     george.click("sign in link").await?;
 //!     george.fill_in("input Email text field", "your@email.com").await?;
 //!     george.fill_in("input Password text field", "super-secret").await?;
 //!     george.click("sign in button").await?;
+//!     george.close_chrome().await?;
 //!     george.stop().await?;
 //!
 //!     Ok(())
@@ -211,23 +212,24 @@ impl George {
         self.daemon.coordinate_of_from_prompt(prompt).await
     }
 
-    /// Opens Firefox in the virtual machine and navigates to the specified URL.
+    /// Opens Chrome in the virtual machine and navigates to the specified URL.
     ///
     /// # Arguments
     ///
-    /// * `url` - The URL to open in Firefox.
-    pub async fn open_firefox(&self, url: &str) -> Result<(), VirtualMachineError> {
+    /// * `url` - The URL to open in Chrome.
+    pub async fn open_chrome(&self, url: &str) -> Result<(), VirtualMachineError> {
         self.execute(
-            format!("firefox {} --width=1024 --height=768 --display=:99", url).as_str(),
+
+            format!("google-chrome {} --no-sandbox --no-first-run --no-default-browser-check", url).as_str(),
             false,
         ).await?;
 
         Ok(())
     }
 
-    /// Closes Firefox in the virtual machine.
-    pub async fn close_firefox(&self) -> Result<(), VirtualMachineError> {
-        self.execute("pkill firefox", true).await?;
+    /// Closes Chrome in the virtual machine.
+    pub async fn close_chrome(&self) -> Result<(), VirtualMachineError> {
+        self.execute("pkill google-chrome", true).await?;
 
         Ok(())
     }

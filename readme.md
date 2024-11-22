@@ -98,8 +98,6 @@ template override:
 * Improve debugging and logging
     * Remove all the println statements
     * Provide the inputs/outputs for each LLM interactive in an easily debuggable format
-* Add an actual test suite to the end-to-end project
-    * Includes running these tests in CI
 * Create bindings for other languages
     * Ruby
     * Python
