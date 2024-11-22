@@ -3,16 +3,6 @@ name = "end-to-end"
 version = "0.1.0"
 edition = "2021"
 
-
-[[bin]]
-name = "server"
-path = "../end-to-end-server/src/main.rs"
-
-[[bin]]
-name = "chat"
-path = "chat/main.rs"
-
-
 [[test]]
 name = "e2e_tests"
 path = "src/main.rs"
