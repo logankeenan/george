@@ -7,7 +7,7 @@
 //! # Example
 //!
 //! ```rust,no_run
-//! use george::George;
+//! use george_ai::George;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {

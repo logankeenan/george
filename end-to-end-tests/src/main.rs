@@ -3,7 +3,7 @@
 #[tokio::test]
 async fn test_fill_out_form() -> Result<(), Box<dyn std::error::Error>> {
     use std::env;
-    use george::George;
+    use george_ai::George;
 
     dotenv::dotenv().ok();
 

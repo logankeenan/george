@@ -380,7 +380,7 @@ name = "end-to-end-tests"
 version = "0.1.0"
 dependencies = [
  "dotenv",
- "george",
+ "george-ai",
  "tokio",
 ]
 
@@ -545,7 +545,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "george"
+name = "george-ai"
 version = "0.1.0"
 dependencies = [
  "base64",
