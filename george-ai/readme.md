@@ -92,8 +92,6 @@ template override:
 
 
 ## Roadmap
-
-* Improve Documentation
 * Improve debugging and logging
     * Remove all the println statements
     * Provide the inputs/outputs for each LLM interactive in an easily debuggable format
