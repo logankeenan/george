@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Running molmo with vllm locally
+
 ssh logan@logan-server << EOF
 # Check if the container exists
 if [ \$(docker ps -a -q -f name=molmo_container) ]; then

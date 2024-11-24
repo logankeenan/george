@@ -94,7 +94,6 @@ template override:
 ## Roadmap
 
 * Improve Documentation
-* Remove all my person stuff from the repo
 * Improve debugging and logging
     * Remove all the println statements
     * Provide the inputs/outputs for each LLM interactive in an easily debuggable format

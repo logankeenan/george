@@ -1,3 +1,5 @@
+# Dependencies needed to run vllm locally
+
 sudo apt  install docker.io -y
 sudo usermod -aG docker $USER
 sudo chmod 666 /var/run/docker.sock
