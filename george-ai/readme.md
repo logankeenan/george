@@ -108,4 +108,5 @@ template override:
 
 This is George. Most of the time he does what he's supposed to, but sometimes he doesn't do the
 right thing at all. He's a living embodiment of current AI expectations.
-![George the Dog](dog.jpeg)
+![dog](https://github.com/user-attachments/assets/e23081b1-c966-49b9-83d5-a2f1dc8429f3)
+
