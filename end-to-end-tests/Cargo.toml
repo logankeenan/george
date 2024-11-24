@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-george-ai = { version = "0.1.0", path = "../george" }
+george-ai = { version = "0.1.0", path = "../george-ai" }
 dotenv = "0.15.0"
