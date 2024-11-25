@@ -20,12 +20,13 @@ Docker images can be used for specific needs.
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut george = George::new("https://your-molmo-llm.com");
     george.start().await?;
-    george.open_firefox("https://some-website.com").await?;
+    george.open_chrome("https://some-website.com").await?;
     george.click("sign in link").await?;
     george.fill_in("input Email text field", "your@email.com").await?;
     george.fill_in("input Password text field", "super-secret").await?;
     george.click("sign in button").await?;
-    george.stop().await?
+    george.close_chrome().await?;
+    george.stop().await?;
 }
 ```
 
@@ -77,7 +78,7 @@ by leveraging [bitsandbytes](https://github.com/bitsandbytes-foundation/bitsandb
 #### Cloud
 
 You can run Molmo with [Runpod.io](https://runpod.io?ref=myyk6f6x) via their vllm pod template. See the video below for
-a demo ([youtube]([url](https://youtu.be/x84Lxl40s-A))):
+a demo ([youtube](https://youtu.be/x84Lxl40s-A)):
 
 
 https://github.com/user-attachments/assets/8c38169c-bc54-4128-a409-985ef4a2c1de
