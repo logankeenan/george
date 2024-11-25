@@ -2,11 +2,9 @@
 name = "george-ai"
 version = "0.1.0"
 edition = "2021"
-
-include = [
-    "src/**/*",
-    "george-daemon/**/*"
-]
+license = "MIT"
+description = "George is an API leveraging AI to make it easy to control a computer with natural language"
+repository = "https://github.com/logankeenan/george"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
