@@ -5,7 +5,7 @@ FROM rust:1.81.0 as builder
 WORKDIR /usr/src/app
 
 # Copy the source code into the container
-COPY . .
+COPY ../george-daemon .
 
 RUN apt-get update && apt-get install -y \
     libxdo-dev \
