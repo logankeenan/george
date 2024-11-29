@@ -1,5 +1,8 @@
 # George
 
+[![Crates.io](https://img.shields.io/crates/v/george-ai)](https://crates.io/crates/george-ai)
+
+
 George is an API leveraging AI to make it easy to control a computer with natural language.
 
 Unlike traditional frameworks which rely on predefined static selectors, this API uses AI vision to interpret the
