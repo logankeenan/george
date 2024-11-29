@@ -2,16 +2,14 @@
 
 George is an API leveraging AI to make it easy to control a computer with natural language.
 
-Unlike traditional frameworks which rely on predefined static selectors, this API uses AI vision to interpret the screen
-like a human would, executing basic computer commands (mouse, keyboard) to interact with elements. This makes it more
-resilient to UI changes and able to automate interfaces that traditional tools can't handle.
+Unlike traditional frameworks which rely on predefined static selectors, this API uses AI vision to interpret the
+screen. This makes it more resilient to UI changes and able to automate interfaces that traditional tools can't handle.
 
 The key to George's reliable automation is providing clear, descriptive references to UI elements - such as "blue submit
 button" or "email input field". Once these natural descriptions are established, the AI consistently identifies and
 interacts with the correct elements, regardless of underlying code changes.
 
-George runs all in an isolated Docker container - though custom
-Docker images can be used for specific needs.
+George runs in an isolated Docker container.
 
 ### Example
 
@@ -80,19 +78,16 @@ by leveraging [bitsandbytes](https://github.com/bitsandbytes-foundation/bitsandb
 You can run Molmo with [Runpod.io](https://runpod.io?ref=myyk6f6x) via their vllm pod template. See the video below for
 a demo ([youtube](https://youtu.be/x84Lxl40s-A)):
 
-
 https://github.com/user-attachments/assets/8c38169c-bc54-4128-a409-985ef4a2c1de
 
-
-
-
 template override:
+
 ```
 --host 0.0.0.0 --port 8000 --model allenai/Molmo-7B-D-0924 --trust-remote-code --api-key your-api-key
 ```
 
-
 ## Roadmap
+
 * Improve debugging and logging
     * Remove all the println statements
     * Provide the inputs/outputs for each LLM interactive in an easily debuggable format
