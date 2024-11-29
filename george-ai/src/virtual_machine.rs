@@ -65,11 +65,10 @@ impl VirtualMachine {
 
     async fn build_image(&self, image_name: &str) -> Result<(), VirtualMachineError> {
         let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let dockerfile_path = project_root.join("george-daemon");
 
         let tar_path = Path::new("/tmp/george-daemon.tar");
         let mut builder = Builder::new(File::create(tar_path)?);
-        builder.append_dir_all(".", dockerfile_path)?;
+        builder.append_dir_all(".", project_root)?;
         builder.finish()?;
 
         let tar_contents = std::fs::read(tar_path)?;

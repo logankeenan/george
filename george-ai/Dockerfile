@@ -1,23 +1,5 @@
-# Use the official Rust image as a base for building
-FROM rust:1.81.0 as builder
-
-# Set the working directory
-WORKDIR /usr/src/app
-
-# Copy the source code into the container
-COPY ../george-daemon .
-
-RUN apt-get update && apt-get install -y \
-    libxdo-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Build the Rust app in release mode
-RUN cargo build --release
-
-# Use the official Ubuntu 22.04 as a base image for running
 FROM ubuntu:22.04
 
-# Install necessary packages
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -44,10 +26,8 @@ RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd6
     && apt-get update \
     && apt-get install -y ./google-chrome-stable_current_amd64.deb \
     && rm google-chrome-stable_current_amd64.deb \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
-WORKDIR /usr/local/bin
+COPY george-daemon .
 
-# Copy the built binary from the builder stage
-COPY --from=builder /usr/src/app/target/release/george-daemon .
+RUN chmod +x george-daemon
