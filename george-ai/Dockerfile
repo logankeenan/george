@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
     pciutils \
     dbus-x11 \
     libxdo3 \
+    curl \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
@@ -28,6 +30,9 @@ RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd6
     && rm google-chrome-stable_current_amd64.deb \
     && rm -rf /var/lib/apt/lists/*
 
-COPY george-daemon .
+# local development
+#COPY george-daemon .
+#RUN chmod +x george-daemon
 
-RUN chmod +x george-daemon
+RUN curl --proto '=https' --tlsv1.2 -LsSf https://github.com/logankeenan/george/releases/download/george-daemon/0.1.0/george-daemon-installer.sh | sh
+RUN cp ./root/.cargo/bin/george-daemon /
