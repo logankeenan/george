@@ -11,6 +11,10 @@ interacts with the correct elements, regardless of underlying code changes.
 
 George runs in an isolated Docker container.
 
+
+https://github.com/user-attachments/assets/534bfcf8-13c6-45cf-83b3-98804f9aa432
+
+
 ### Example
 
 ```rust
@@ -27,8 +31,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     george.stop().await?;
 }
 ```
-
-https://github.com/user-attachments/assets/4c0a2d85-7eb3-4851-93ff-817c05658776
 
 ## Getting Started
 
