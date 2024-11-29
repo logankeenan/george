@@ -5,13 +5,6 @@ George is an API leveraging AI to make it easy to control a computer with natura
 Unlike traditional frameworks which rely on predefined static selectors, this API uses AI vision to interpret the
 screen. This makes it more resilient to UI changes and able to automate interfaces that traditional tools can't handle.
 
-The key to George's reliable automation is providing clear, descriptive references to UI elements - such as "blue submit
-button" or "email input field". Once these natural descriptions are established, the AI consistently identifies and
-interacts with the correct elements, regardless of underlying code changes.
-
-George runs in an isolated Docker container.
-
-
 https://github.com/user-attachments/assets/534bfcf8-13c6-45cf-83b3-98804f9aa432
 
 
@@ -90,15 +83,14 @@ template override:
 
 ## Roadmap
 
+* Create a UI to help build out the selectors. It can be time-consuming to come up with an accurate selector.
 * Improve debugging and logging
-    * Remove all the println statements
-    * Provide the inputs/outputs for each LLM interactive in an easily debuggable format
 * Create bindings for other languages
     * Ruby
     * Python
     * JavaScript/Typescript
     * Others?
-* Create a UI to help build out the selectors. It can be time consuming to come up with an accurate selector.
+
 
 ### Why the name George?
 
